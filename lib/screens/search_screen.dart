@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/song.dart';
-import '../routes.dart';
 import '../widgets/bottom_nav_bar.dart';
+import '../routes.dart';
 
 class SearchScreen extends StatefulWidget {
   @override
@@ -26,7 +26,7 @@ class _SearchScreenState extends State<SearchScreen> {
   @override
   void initState() {
     super.initState();
-    filteredSongs = songs; // เริ่มต้นแสดงทุกเพลง
+    filteredSongs = songs;
   }
 
   void _filterSongs(String query) {
@@ -44,7 +44,7 @@ class _SearchScreenState extends State<SearchScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
-      bottomNavigationBar: BottomNavBar(currentIndex: 1), // เพิ่ม Bottom Navigation
+      bottomNavigationBar: BottomNavBar(currentIndex: 1),
       body: Column(
         children: [
           _buildHeader(),
@@ -58,27 +58,39 @@ class _SearchScreenState extends State<SearchScreen> {
   Widget _buildHeader() {
     return Container(
       padding: EdgeInsets.all(16),
+      width: double.infinity,
       decoration: BoxDecoration(
         color: Colors.green[900],
         borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(height: 30),
-          Text("Search Songs",
-              style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white)),
-          SizedBox(height: 5),
-          Text("Find your favorite songs", style: TextStyle(color: Colors.white70)),
-          SizedBox(height: 10),
-        ],
+      child: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                IconButton(
+                  icon: Icon(Icons.arrow_back, color: Colors.white),
+                  onPressed: () => Navigator.pop(context),
+                ),
+                SizedBox(width: 10),
+                Text(
+                  "Search Songs",
+                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white),
+                ),
+              ],
+            ),
+            SizedBox(height: 5),
+            Text("Find your favorite songs", style: TextStyle(color: Colors.white70)),
+            SizedBox(height: 10),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildSearchBar() {
     return Container(
-      padding: EdgeInsets.all(10),
       margin: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       decoration: BoxDecoration(
         color: Colors.white12,
@@ -89,7 +101,7 @@ class _SearchScreenState extends State<SearchScreen> {
         onChanged: _filterSongs,
         decoration: InputDecoration(
           prefixIcon: Icon(Icons.search, color: Colors.white70),
-          hintText: "Search in play list",
+          hintText: "Search in App...",
           hintStyle: TextStyle(color: Colors.white54),
           border: InputBorder.none,
           contentPadding: EdgeInsets.symmetric(vertical: 14),
@@ -104,39 +116,41 @@ class _SearchScreenState extends State<SearchScreen> {
       itemCount: filteredSongs.length,
       itemBuilder: (context, index) {
         final song = filteredSongs[index];
-        return ListTile(
-          leading: ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: Image.network(
-              song.image,
-              width: 50,
-              height: 50,
-              fit: BoxFit.cover,
-              loadingBuilder: (context, child, loadingProgress) {
-                if (loadingProgress == null) return child;
-                return Container(
-                  width: 50,
-                  height: 50,
-                  alignment: Alignment.center,
-                  child: CircularProgressIndicator(
-                    value: loadingProgress.expectedTotalBytes != null
-                        ? loadingProgress.cumulativeBytesLoaded /
-                            (loadingProgress.expectedTotalBytes ?? 1)
-                        : null,
-                  ),
-                );
-              },
-              errorBuilder: (context, error, stackTrace) {
-                return Icon(Icons.music_note, size: 50, color: Colors.grey);
-              },
-            ),
+        return Container(
+          margin: EdgeInsets.symmetric(vertical: 4),
+          decoration: BoxDecoration(
+            color: index == 2 ? Colors.white12 : Colors.transparent, // ไฮไลท์เพลงที่ 3
+            borderRadius: BorderRadius.circular(10),
           ),
-          title: Text(song.title, style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-          subtitle: Text(song.artist, style: TextStyle(color: Colors.white70)),
-          trailing: Icon(Icons.arrow_forward_ios, color: Colors.white70, size: 16),
-          onTap: () {
-            Navigator.pushNamed(context, AppRoutes.musicDetail);
-          },
+          child: ListTile(
+            leading: ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.network(
+                song.image,
+                width: 50,
+                height: 50,
+                fit: BoxFit.cover,
+                loadingBuilder: (context, child, loadingProgress) {
+                  if (loadingProgress == null) return child;
+                  return Container(
+                    width: 50,
+                    height: 50,
+                    alignment: Alignment.center,
+                    child: CircularProgressIndicator(),
+                  );
+                },
+                errorBuilder: (context, error, stackTrace) {
+                  return Icon(Icons.music_note, size: 50, color: Colors.grey);
+                },
+              ),
+            ),
+            title: Text(song.title, style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            subtitle: Text(song.artist, style: TextStyle(color: Colors.white70)),
+            trailing: Icon(Icons.arrow_forward_ios, color: Colors.white70, size: 16),
+            onTap: () {
+              Navigator.pushNamed(context, AppRoutes.musicDetail);
+            },
+          ),
         );
       },
     );
