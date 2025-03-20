@@ -11,13 +11,62 @@ class MusicDetailScreen extends StatefulWidget {
 class _MusicDetailScreenState extends State<MusicDetailScreen> {
   bool isFollowed = false;
 
+  // ฟังก์ชันแสดง Popup โปรไฟล์
+  void _showProfilePopup() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20.0),
+          ),
+          backgroundColor: Colors.white,
+          title: Text(
+            'Jeff Satur',
+            style: Theme.of(context)
+                .textTheme
+                .headlineSmall
+                ?.copyWith(color: Colors.black87, fontWeight: FontWeight.bold),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const CircleAvatar(
+                radius: 40,
+                backgroundImage: NetworkImage(
+                  'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSkmr5rQsg9XdW3eOt-AIt27fi4MOk7ziSkkg&s',
+                ),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Worakamol Satur, better known as Jeff Satur, is a Thai singer and actor.',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.black87, height: 1.4),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text(
+                'Close',
+                style: TextStyle(
+                    color: Colors.green, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final size = MediaQuery.of(context).size;
     
     return Scaffold(
-      // ลบ AppBar เพื่อให้หน้าจอเต็มที่
+      // ไม่ระบุ appBar เพื่อให้หน้าจอเต็มที่
       body: SingleChildScrollView(
         child: Column(
           children: [
@@ -38,7 +87,7 @@ class _MusicDetailScreenState extends State<MusicDetailScreen> {
                     ),
                   ),
                 ),
-                // Gradient overlay เพื่อความคมชัดของข้อความ
+                // Gradient overlay เพื่อให้ข้อความอ่านได้ชัดเจน
                 Container(
                   height: size.height * 0.45,
                   decoration: BoxDecoration(
@@ -56,7 +105,7 @@ class _MusicDetailScreenState extends State<MusicDetailScreen> {
                     ),
                   ),
                 ),
-                // ไอคอนลูกศรย้อนกลับ (←) สีขาวที่มุมซ้ายบน
+                // ปุ่มย้อนกลับ (←) สีขาวที่มุมบนซ้าย
                 Positioned(
                   top: 40,
                   left: 16,
@@ -78,7 +127,7 @@ class _MusicDetailScreenState extends State<MusicDetailScreen> {
                     ),
                   ),
                 ),
-                // ข้อมูลเพลงและปุ่มต่างๆ วางด้านล่างของ Cover Image
+                // ข้อมูลเพลงและปุ่มต่างๆ วางด้านล่าง Cover Image
                 Positioned(
                   bottom: 20,
                   left: 20,
@@ -98,13 +147,16 @@ class _MusicDetailScreenState extends State<MusicDetailScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          // รูปโปรไฟล์วงกลม + ชื่อศิลปิน
+                          // รูปโปรไฟล์วงกลม + ชื่อศิลปิน (เมื่อกดจะแสดง Popup)
                           Row(
                             children: [
-                              const CircleAvatar(
-                                radius: 16,
-                                backgroundImage: NetworkImage(
-                                  'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSkmr5rQsg9XdW3eOt-AIt27fi4MOk7ziSkkg&s',
+                              InkWell(
+                                onTap: _showProfilePopup,
+                                child: const CircleAvatar(
+                                  radius: 16,
+                                  backgroundImage: NetworkImage(
+                                    'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSkmr5rQsg9XdW3eOt-AIt27fi4MOk7ziSkkg&s',
+                                  ),
                                 ),
                               ),
                               const SizedBox(width: 8),
@@ -137,8 +189,9 @@ class _MusicDetailScreenState extends State<MusicDetailScreen> {
                                   );
                                 },
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor:
-                                      isFollowed ? Colors.grey : Colors.green,
+                                  backgroundColor: isFollowed
+                                      ? Colors.grey
+                                      : Colors.green,
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(20),
                                   ),
@@ -178,7 +231,7 @@ class _MusicDetailScreenState extends State<MusicDetailScreen> {
                 ),
               ],
             ),
-            // ส่วนเนื้อหารายละเอียดเพิ่มเติม
+            // ส่วนรายละเอียดเพิ่มเติม
             Padding(
               padding: const EdgeInsets.all(20),
               child: Column(
