@@ -9,7 +9,7 @@ class MusicListScreen extends StatefulWidget {
 }
 
 class _MusicListScreenState extends State<MusicListScreen> {
-  final String defaultImage = "https://via.placeholder.com/150"; // รูปภาพเริ่มต้นจากเว็บ
+  final String defaultImage = "https://via.placeholder.com/150";
 
   final List<Song> songs = [
     Song(title: "Born Again", artist: "LISA, Doja Cat, RAYE", image: "https://th.bing.com/th/id/OIP.2wFtFaLzI4k5TtfIiCaOyQHaHa?rs=1&pid=ImgDetMain"),
@@ -23,26 +23,42 @@ class _MusicListScreenState extends State<MusicListScreen> {
     Song(title: "number one girl", artist: "ROSÉ", image: "https://th.bing.com/th/id/OIP.tsjvixO26ZVkhx6-ycs31gHaE8?rs=1&pid=ImgDetMain"),
   ];
 
-  final List<String> categories = [
-    "All", "Pop", "Rock", "Hip-Hop", "Jazz", "Classical", "EDM", "Country", "Blues", "Folk", "Reggae"
-  ];
+  final List<String> categories = ["All", "Pop", "Rock", "Hip-Hop", "Jazz", "Classical", "EDM", "Country", "Blues"];
 
-  bool isShuffled = false; // State สำหรับปุ่ม Shuffle
+  bool isShuffled = false;
+  List<Song> filteredSongs = [];
+
+  @override
+  void initState() {
+    super.initState();
+    filteredSongs = songs; // เริ่มต้นแสดงทุกเพลง
+  }
+
+  void _filterSongs(String query) {
+    setState(() {
+      filteredSongs = songs.where((song) {
+        final titleLower = song.title.toLowerCase();
+        final artistLower = song.artist.toLowerCase();
+        final searchLower = query.toLowerCase();
+        return titleLower.contains(searchLower) || artistLower.contains(searchLower);
+      }).toList();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-  return Scaffold(
-    backgroundColor: Colors.black,
-    bottomNavigationBar: BottomNavBar(currentIndex: 2), // เพิ่ม currentIndex ให้เหมาะสม
-    body: Column(
-      children: [
-        _buildHeader(),
-        _buildCategoryChips(),
-        Expanded(child: _buildSongList()),
-      ],
-    ),
-  );
-    }
+    return Scaffold(
+      backgroundColor: Colors.black,
+      bottomNavigationBar: BottomNavBar(currentIndex: 2),
+      body: Column(
+        children: [
+          _buildHeader(),
+          _buildCategoryChips(),
+          Expanded(child: _buildSongList()),
+        ],
+      ),
+    );
+  }
 
   Widget _buildHeader() {
     return Container(
@@ -62,7 +78,7 @@ class _MusicListScreenState extends State<MusicListScreen> {
           SizedBox(height: 20),
           Text("Play List", style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white)),
           SizedBox(height: 5),
-          Text("1,324,984 Songs", style: TextStyle(color: Colors.white70)),
+          Text("${filteredSongs.length} Songs", style: TextStyle(color: Colors.white70)),
           SizedBox(height: 10),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -79,7 +95,12 @@ class _MusicListScreenState extends State<MusicListScreen> {
                     },
                   ),
                   SizedBox(width: 20),
-                  Icon(Icons.play_circle_fill, color: Colors.white, size: 30),
+                  IconButton(
+                    icon: Icon(Icons.play_circle_fill, color: Colors.white, size: 30),
+                    onPressed: () {
+                      Navigator.pushNamed(context, AppRoutes.musicPlayer);
+                    },
+                  ),
                 ],
               ),
             ],
@@ -97,6 +118,7 @@ class _MusicListScreenState extends State<MusicListScreen> {
       ),
       child: TextField(
         style: TextStyle(color: Colors.white),
+        onChanged: _filterSongs,
         decoration: InputDecoration(
           prefixIcon: Icon(Icons.search, color: Colors.white70),
           hintText: "Search in play list",
@@ -131,14 +153,14 @@ class _MusicListScreenState extends State<MusicListScreen> {
   Widget _buildSongList() {
     return ListView.builder(
       padding: EdgeInsets.symmetric(horizontal: 16),
-      itemCount: songs.length,
+      itemCount: filteredSongs.length,
       itemBuilder: (context, index) {
-        final song = songs[index];
+        final song = filteredSongs[index];
         return ListTile(
           leading: ClipRRect(
             borderRadius: BorderRadius.circular(8),
             child: Image.network(
-              song.image ?? defaultImage, 
+              song.image ?? defaultImage,
               width: 50,
               height: 50,
               fit: BoxFit.cover,
@@ -149,9 +171,18 @@ class _MusicListScreenState extends State<MusicListScreen> {
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.favorite, color: Colors.green, size: 24),
-              SizedBox(width: 10),
-              Icon(Icons.more_vert, color: Colors.white, size: 24),
+              IconButton(
+                icon: Icon(Icons.play_circle_fill, color: Colors.green, size: 28),
+                onPressed: () {
+                  Navigator.pushNamed(context, AppRoutes.musicPlayer);
+                },
+              ),
+              IconButton(
+                icon: Icon(Icons.more_vert, color: Colors.white, size: 24),
+                onPressed: () {
+                  Navigator.pushNamed(context, AppRoutes.musicDetail);
+                },
+              ),
             ],
           ),
         );
