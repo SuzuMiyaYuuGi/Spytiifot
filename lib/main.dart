@@ -1,32 +1,18 @@
 import 'package:flutter/material.dart';
+import 'homescreen.dart';
+import 'uploadmusicscreen.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(SpytifyApp());
 }
 
-class MyApp extends StatelessWidget {
+class SpytifyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Spytifot',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: HomePage(),
-    );
-  }
-}
-
-class HomePage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('หน้าแรก'),
-      ),
-      body: Center(
-        child: Text('ยินดีต้อนรับสู่ Spytifot!'),
-      ),
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData.dark(),
+      home: UploadMusicScreen(),
     );
   }
 }
