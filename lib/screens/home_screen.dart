@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../routes.dart'; // ✅ Import Routes ที่กำหนดไว้
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -6,38 +7,39 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  int _selectedIndex = 0; // เก็บค่า index ของแท็บปัจจุบัน
-
-  // รายการหน้าที่จะเปลี่ยนไปตาม Bottom Navigation
-  final List<Widget> _pages = [
-    HomeContent(),
-    Center(child: Text("🔍 Search Page", style: TextStyle(color: Colors.white, fontSize: 24))),
-    Center(child: Text("🎵 Play List Page", style: TextStyle(color: Colors.white, fontSize: 24))),
-    Center(child: Text("📤 Upload Page", style: TextStyle(color: Colors.white, fontSize: 24))),
-  ];
+  int _selectedIndex = 0; // เก็บ state ของ navigation bar
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
+      body: HomeContent(), // ✅ ใช้ HomeContent โดยตรง
 
-      // 📌 แสดงหน้า UI ตามแท็บที่เลือก
-      body: IndexedStack(
-        index: _selectedIndex,
-        children: _pages,
-      ),
-
-      // 🔽 **Bottom Navigation Bar**
+      // **🔽 Bottom Navigation Bar**
       bottomNavigationBar: BottomNavigationBar(
         backgroundColor: Colors.black,
         selectedItemColor: Colors.greenAccent,
         unselectedItemColor: Colors.white70,
         currentIndex: _selectedIndex,
-        type: BottomNavigationBarType.fixed, // ป้องกันการบีบไอคอน
+        type: BottomNavigationBarType.fixed, // ✅ ป้องกันไอคอนถูกบีบ
         onTap: (index) {
+          if (_selectedIndex == index) return; // ป้องกันการกดซ้ำแล้วไม่มีอะไรเกิดขึ้น
           setState(() {
             _selectedIndex = index;
           });
+
+          // ✅ นำทางไปยังหน้าต่างๆ ผ่าน `routes.dart`
+          switch (index) {
+            case 1:
+              Navigator.pushNamed(context, AppRoutes.search);
+              break;
+            case 2:
+              Navigator.pushNamed(context, AppRoutes.musicList);
+              break;
+            case 3:
+              Navigator.pushNamed(context, AppRoutes.uploadMusic);
+              break;
+          }
         },
         items: [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
@@ -50,7 +52,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-// 📌 **เนื้อหาหลักของหน้า Home**
+// 📌 **หน้าหลักของ Home**
 class HomeContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -110,6 +112,7 @@ class HomeContent extends StatelessWidget {
                 children: [
                   _buildRecentCard("https://i.scdn.co/image/ab67616100005174c36dd9eb55fb0db4911f25dd", "Bruno Mars", "Grenade"),
                   _buildRecentCard("https://i.scdn.co/image/ab67616d0000b2739d28fd01859073a3ae6ea209", "NewJeans", "Super Shy"),
+                  _buildRecentCard("https://i.scdn.co/image/ab67616d0000b273e2f039481babe23658fc719a", "Linkin Park", "New Divine"),
                 ],
               ),
             ),
@@ -130,7 +133,7 @@ class HomeContent extends StatelessWidget {
               crossAxisSpacing: 10,
               mainAxisSpacing: 10,
               children: [
-                _buildPlaylistCard("https://i.scdn.co/image/ab6761610000e5eb5cd3b3af8b72e32be78571ec", "ขี้หึง", "Silly Fools"),
+                _buildPlaylistCard("https://i.scdn.co/image/ab67616d0000b2732e05fd2e7fa984c228bdd637", "ขี้หึง", "Silly Fools"),
                 _buildPlaylistCard("https://i.scdn.co/image/ab67616d0000b2739d28fd01859073a3ae6ea209", "Super Shy", "NewJeans"),
                 _buildPlaylistCard("https://i.scdn.co/image/ab67616100005174c36dd9eb55fb0db4911f25dd", "Grenade", "Bruno Mars"),
                 _buildPlaylistCard("https://i.scdn.co/image/ab67616d0000b273e2f039481babe23658fc719a", "New Divine", "Linkin Park"),
