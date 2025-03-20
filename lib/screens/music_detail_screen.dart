@@ -66,7 +66,20 @@ class _MusicDetailScreenState extends State<MusicDetailScreen> {
     final size = MediaQuery.of(context).size;
     
     return Scaffold(
-      // ไม่ระบุ appBar เพื่อให้หน้าจอเต็มที่
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        // ทำให้ AppBar โปร่งใสและไม่มีเงา
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(
+            Icons.arrow_back,
+            color: Colors.white,
+            size: 24,
+          ),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
       body: SingleChildScrollView(
         child: Column(
           children: [
@@ -102,28 +115,6 @@ class _MusicDetailScreenState extends State<MusicDetailScreen> {
                         Colors.transparent,
                         Colors.black.withOpacity(0.7),
                       ],
-                    ),
-                  ),
-                ),
-                // ปุ่มย้อนกลับ (←) สีขาวที่มุมบนซ้าย
-                Positioned(
-                  top: 40,
-                  left: 16,
-                  child: InkWell(
-                    onTap: () {
-                      Navigator.pop(context);
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.5),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.arrow_back,
-                        color: Colors.white,
-                        size: 24,
-                      ),
                     ),
                   ),
                 ),
