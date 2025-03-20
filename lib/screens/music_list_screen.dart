@@ -12,15 +12,15 @@ class _MusicListScreenState extends State<MusicListScreen> {
   final String defaultImage = "https://via.placeholder.com/150"; // รูปภาพเริ่มต้นจากเว็บ
 
   final List<Song> songs = [
-    Song(title: "Born Again", artist: "LISA, Doja Cat, RAYE", image: "https://example.com/born_again.jpg"),
-    Song(title: "Yours Ever", artist: "cocktail, Q Flure", image: "https://example.com/yours_ever.jpg"),
-    Song(title: "DAY ONE", artist: "PUN", image: "https://example.com/day_one.jpg"),
-    Song(title: "Like JENNIE", artist: "JENNIE", image: "https://example.com/like_jennie.jpg"),
-    Song(title: "Garden Of Eden", artist: "Lady Gaga", image: "https://example.com/garden_of_eden.jpg"),
-    Song(title: "luther (with sza)", artist: "Kendrick Lamar, SZA", image: "https://example.com/luther.jpg"),
-    Song(title: "I Just Wanna Know", artist: "PUN", image: "https://example.com/just_wanna_know.jpg"),
-    Song(title: "earthquake", artist: "JISOO", image: "https://example.com/earthquake.jpg"),
-    Song(title: "number one girl", artist: "ROSÉ", image: "https://example.com/number_one_girl.jpg"),
+    Song(title: "Born Again", artist: "LISA, Doja Cat, RAYE", image: "https://th.bing.com/th/id/OIP.2wFtFaLzI4k5TtfIiCaOyQHaHa?rs=1&pid=ImgDetMain"),
+    Song(title: "Yours Ever", artist: "cocktail, Q Flure", image: "https://th.bing.com/th/id/OIP.sser6rSI9jXQn3EyvbbovwHaHa?rs=1&pid=ImgDetMain"),
+    Song(title: "DAY ONE", artist: "PUN", image: "https://i.ytimg.com/vi/FAtUIozzvEo/maxresdefault.jpg"),
+    Song(title: "Like JENNIE", artist: "JENNIE", image: "https://th.bing.com/th?id=OIF.8GE%2f2G8g8jNEDHamnQzQpQ&rs=1&pid=ImgDetMain"),
+    Song(title: "Garden Of Eden", artist: "Lady Gaga", image: "https://i.ytimg.com/vi/s1AUBvW1LOI/oar2.jpg?sqp=-oaymwEYCM4FENAFSFqQAgHyq4qpAwcIARUAAIhC&rs=AOn4CLANdtaQHB9qIAgGF8gXVyzsJ8M56g"),
+    Song(title: "luther (with sza)", artist: "Kendrick Lamar, SZA", image: "https://th.bing.com/th/id/OIP.Mr5g9VPvv1g9Hnk0UwBZegHaE5?w=235&h=180&c=7&r=0&o=5&dpr=1.1&pid=1.7"),
+    Song(title: "I Just Wanna Know", artist: "PUN", image: "https://th.bing.com/th/id/OIP.nn3T_0Y7BaWpKR3-11cO6QHaEK?rs=1&pid=ImgDetMain"),
+    Song(title: "earthquake", artist: "JISOO", image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTKm6CVSWh3FjwNZH6uLQpr4CgSDr6aiK0-2A&s"),
+    Song(title: "number one girl", artist: "ROSÉ", image: "https://th.bing.com/th/id/OIP.tsjvixO26ZVkhx6-ycs31gHaE8?rs=1&pid=ImgDetMain"),
   ];
 
   final List<String> categories = [
@@ -31,33 +31,33 @@ class _MusicListScreenState extends State<MusicListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    double screenWidth = MediaQuery.of(context).size.width;
+  return Scaffold(
+    backgroundColor: Colors.black,
+    bottomNavigationBar: BottomNavBar(currentIndex: 2), // เพิ่ม currentIndex ให้เหมาะสม
+    body: Column(
+      children: [
+        _buildHeader(),
+        _buildCategoryChips(),
+        Expanded(child: _buildSongList()),
+      ],
+    ),
+  );
+    }
 
-    return Scaffold(
-      backgroundColor: Colors.black,
-      bottomNavigationBar: BottomNavBar(),
-      body: Column(
-        children: [
-          _buildHeader(screenWidth),
-          _buildCategoryChips(),
-          Expanded(child: _buildSongList()),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildHeader(double screenWidth) {
+  Widget _buildHeader() {
     return Container(
-      padding: EdgeInsets.all(16),
-      width: screenWidth,
+      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 20),
       decoration: BoxDecoration(
-        color: Colors.green[900],
+        gradient: LinearGradient(
+          colors: [Colors.green.shade900, Colors.green.shade700],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+        ),
         borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(height: 30),
           _buildSearchBar(),
           SizedBox(height: 20),
           Text("Play List", style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white)),
@@ -138,26 +138,10 @@ class _MusicListScreenState extends State<MusicListScreen> {
           leading: ClipRRect(
             borderRadius: BorderRadius.circular(8),
             child: Image.network(
-              song.image ?? defaultImage, // ใช้รูปจาก URL หรือรูปเริ่มต้น
+              song.image ?? defaultImage, 
               width: 50,
               height: 50,
               fit: BoxFit.cover,
-              loadingBuilder: (context, child, loadingProgress) {
-                if (loadingProgress == null) return child;
-                return Container(
-                  width: 50,
-                  height: 50,
-                  alignment: Alignment.center,
-                  child: CircularProgressIndicator(
-                    value: loadingProgress.expectedTotalBytes != null
-                        ? loadingProgress.cumulativeBytesLoaded / (loadingProgress.expectedTotalBytes ?? 1)
-                        : null,
-                  ),
-                );
-              },
-              errorBuilder: (context, error, stackTrace) {
-                return Icon(Icons.music_note, size: 50, color: Colors.grey);
-              },
             ),
           ),
           title: Text(song.title, style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
@@ -165,24 +149,9 @@ class _MusicListScreenState extends State<MusicListScreen> {
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              IconButton(
-                icon: Icon(Icons.favorite, color: Colors.green, size: 24),
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text("${song.title} added to favorites!"),
-                      duration: Duration(seconds: 1),
-                    ),
-                  );
-                },
-              ),
+              Icon(Icons.favorite, color: Colors.green, size: 24),
               SizedBox(width: 10),
-              IconButton(
-                icon: Icon(Icons.more_vert, color: Colors.white, size: 24),
-                onPressed: () {
-                  Navigator.pushNamed(context, AppRoutes.musicDetail);
-                },
-              ),
+              Icon(Icons.more_vert, color: Colors.white, size: 24),
             ],
           ),
         );
