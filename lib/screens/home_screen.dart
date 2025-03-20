@@ -1,11 +1,26 @@
 import 'package:flutter/material.dart';
 import '../routes.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
+  @override
+  _HomeScreenState createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  int _selectedIndex = 0;
+
+  // รายการหน้าที่ Bottom Navigation Bar จะเปลี่ยนไป
+  final List<Widget> _pages = [
+    HomeScreen(), // หน้าหลัก
+    Placeholder(), // หน้าค้นหา (Search)
+    Placeholder(), // หน้า Play List
+    Placeholder(), // หน้า Upload Music
+  ];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black, // สีพื้นหลัง Spotify Theme
+      backgroundColor: Colors.black,
       appBar: AppBar(
         backgroundColor: Colors.black,
         elevation: 0,
@@ -34,7 +49,6 @@ class HomeScreen extends StatelessWidget {
             ),
             SizedBox(height: 20),
 
-            // **หมวดหมู่ที่เพิ่มเข้ามา**
             Expanded(
               child: SingleChildScrollView(
                 child: Column(
@@ -81,21 +95,42 @@ class HomeScreen extends StatelessWidget {
         ),
       ),
 
-      // **Bottom Navigation Bar แบบ Spotify**
+      // **อัปเดต Bottom Navigation Bar**
       bottomNavigationBar: BottomNavigationBar(
         backgroundColor: Colors.black,
         selectedItemColor: Colors.greenAccent,
         unselectedItemColor: Colors.white70,
+        currentIndex: _selectedIndex,
+        onTap: (index) {
+          setState(() {
+            _selectedIndex = index;
+          });
+          // นำทางไปยังหน้าต่างๆ ตามลำดับ
+          switch (index) {
+            case 0:
+              Navigator.pushNamed(context, AppRoutes.home);
+              break;
+            case 1:
+              Navigator.pushNamed(context, AppRoutes.musicPlayer);
+              break;
+            case 2:
+              Navigator.pushNamed(context, AppRoutes.musicList);
+              break;
+            case 3:
+              Navigator.pushNamed(context, AppRoutes.uploadMusic);
+              break;
+          }
+        },
         items: [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-          BottomNavigationBarItem(icon: Icon(Icons.library_music), label: "Library"),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
+          BottomNavigationBarItem(icon: Icon(Icons.search), label: "Search"), // เปลี่ยนจาก Library เป็น Search
+          BottomNavigationBarItem(icon: Icon(Icons.playlist_play), label: "Play List"), // เปลี่ยนจาก Profile เป็น Play List
+          BottomNavigationBarItem(icon: Icon(Icons.upload_file), label: "Upload"), // เพิ่มเมนู Upload
         ],
       ),
     );
   }
 
-  // **สร้างหัวข้อหมวดหมู่**
   Widget _buildCategoryTitle(String title) {
     return Padding(
       padding: EdgeInsets.only(top: 20, bottom: 10),
@@ -106,7 +141,6 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  // **สร้าง GridView สำหรับ Playlist**
   Widget _buildPlaylistGrid(BuildContext context, List<List<dynamic>> playlists) {
     return GridView.count(
       shrinkWrap: true,
@@ -120,7 +154,6 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  // **สร้าง Playlist Card**
   Widget _buildPlaylistCard(BuildContext context, String title, IconData icon, String routeName) {
     return GestureDetector(
       onTap: () => Navigator.pushNamed(context, routeName),
