@@ -1,18 +1,19 @@
 import 'package:flutter/material.dart';
-import 'homescreen.dart';
-import 'uploadmusicscreen.dart';
+import 'routes.dart';
 
 void main() {
-  runApp(SpytifyApp());
+  runApp(MyApp());
 }
 
-class SpytifyApp extends StatelessWidget {
+class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
+      title: 'Spytifot',
       theme: ThemeData.dark(),
-      home: UploadMusicScreen(),
+      initialRoute: AppRoutes.home,
+      routes: AppRoutes.getRoutes(),
     );
   }
 }
