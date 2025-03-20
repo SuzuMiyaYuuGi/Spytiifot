@@ -22,6 +22,7 @@ class _SearchScreenState extends State<SearchScreen> {
   ];
 
   List<Song> filteredSongs = [];
+  String searchText = ""; // ตัวแปรเก็บข้อความค้นหา
 
   @override
   void initState() {
@@ -31,6 +32,7 @@ class _SearchScreenState extends State<SearchScreen> {
 
   void _filterSongs(String query) {
     setState(() {
+      searchText = query;
       filteredSongs = songs.where((song) {
         final titleLower = song.title.toLowerCase();
         final artistLower = song.artist.toLowerCase();
@@ -49,6 +51,7 @@ class _SearchScreenState extends State<SearchScreen> {
         children: [
           _buildHeader(),
           _buildSearchBar(),
+          _buildResultCount(),  // ✅ แสดงจำนวนผลลัพธ์
           Expanded(child: _buildSongList()),
         ],
       ),
@@ -69,10 +72,6 @@ class _SearchScreenState extends State<SearchScreen> {
           children: [
             Row(
               children: [
-                IconButton(
-                  icon: Icon(Icons.arrow_back, color: Colors.white),
-                  onPressed: () => Navigator.pop(context),
-                ),
                 SizedBox(width: 10),
                 Text(
                   "Search Songs",
@@ -110,6 +109,33 @@ class _SearchScreenState extends State<SearchScreen> {
     );
   }
 
+  /// ✅ **เพิ่มฟังก์ชันนับจำนวนผลลัพธ์**
+  Widget _buildResultCount() {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 5),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            "Found ${filteredSongs.length} songs",
+            style: TextStyle(color: Colors.white70, fontSize: 16),
+          ),
+          searchText.isNotEmpty
+              ? IconButton(
+                  icon: Icon(Icons.clear, color: Colors.white70),
+                  onPressed: () {
+                    setState(() {
+                      searchText = "";
+                      filteredSongs = songs;
+                    });
+                  },
+                )
+              : SizedBox(), // ถ้าไม่มีการค้นหา ไม่ต้องแสดงปุ่มล้าง
+        ],
+      ),
+    );
+  }
+
   Widget _buildSongList() {
     return ListView.builder(
       padding: EdgeInsets.symmetric(horizontal: 16),
@@ -119,7 +145,7 @@ class _SearchScreenState extends State<SearchScreen> {
         return Container(
           margin: EdgeInsets.symmetric(vertical: 4),
           decoration: BoxDecoration(
-            color: index == 2 ? Colors.white12 : Colors.transparent, // ไฮไลท์เพลงที่ 3
+            color: Colors.transparent, // ✅ ลบเงื่อนไขที่ทำให้สีพื้นหลังเป็นสีเทา
             borderRadius: BorderRadius.circular(10),
           ),
           child: ListTile(
