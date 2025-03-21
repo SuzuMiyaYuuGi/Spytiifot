@@ -23,6 +23,9 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen>
 
   late AnimationController _rotationController;
 
+  // สำหรับไอคอนหัวใจ (ถูกใจ)
+  bool isFavorite = false;
+
   @override
   void initState() {
     super.initState();
@@ -130,7 +133,7 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen>
     super.dispose();
   }
 
-  /// ฟังก์ชันสำหรับโหลดเนื้อเพลงจากไฟล์ใน assets
+  /// ฟังก์ชันสำหรับโหลดเนื้อเพลงจากไฟล์ใน assets และแสดงเป็น Bottom Sheet ที่สามารถลากขึ้นลงได้
   Future<void> _showLyrics(BuildContext context) async {
     String lyrics;
     try {
@@ -140,28 +143,50 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen>
       lyrics = 'ไม่สามารถโหลดเนื้อเพลงได้\n$e';
     }
 
-    // แสดง Popup (Dialog) พร้อมเนื้อเพลง
-    showDialog(
+    // แสดง Bottom Sheet ที่ลากขึ้นลงได้ (DraggableScrollableSheet)
+    showModalBottomSheet(
       context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('Lyrics'),
-        content: SingleChildScrollView(
-          child: Text(lyrics),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
-          ),
-        ],
-      ),
+      isScrollControlled: true, // ให้สามารถขยายเต็มจอได้
+      backgroundColor: Colors.transparent, // พื้นหลังโปร่งใส
+      builder: (BuildContext context) {
+        return DraggableScrollableSheet(
+          initialChildSize: 0.5, // เริ่มต้นครึ่งจอ
+          minChildSize: 0.3,     // เล็กสุด 30% ของจอ
+          maxChildSize: 0.9,     // ใหญ่สุด 90% ของจอ
+          builder: (BuildContext context, ScrollController scrollController) {
+            return Container(
+              decoration: const BoxDecoration(
+                color: Colors.black87,
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(16),
+                  topRight: Radius.circular(16),
+                ),
+              ),
+              child: SingleChildScrollView(
+                controller: scrollController,
+                padding: const EdgeInsets.all(16),
+                child: Text(
+                  lyrics,
+                  style: const TextStyle(color: Colors.white),
+                ),
+              ),
+            );
+          },
+        );
+      },
     );
+  }
+
+  String _formatTime(double seconds) {
+    final minutes = seconds ~/ 60;
+    final sec = (seconds % 60).toInt();
+    return '${minutes.toString().padLeft(2, '0')}:${sec.toString().padLeft(2, '0')}';
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // เอา AppBar ออก หรือถ้าอยากใช้ AppBar ของ Flutter ก็สามารถใช้ได้
+      // พื้นหลังทำเป็น Gradient ไล่สีเขียวไปดำ
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
@@ -175,20 +200,27 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen>
           ),
         ),
         child: SafeArea(
-          // SafeArea จะช่วยเลี่ยงส่วนบนของหน้าจอ (notch)
           child: Column(
             children: [
-              // ลบ SizedBox(height: 80) ออก เพื่อให้ Top Bar ชิดบน
+              // Top Bar
               _buildTopBar(),
-              const SizedBox(height: 30),
-              _buildAlbumArt(),
-              const SizedBox(height: 30),
-              _buildProgressBar(),
               const SizedBox(height: 20),
+              // ภาพอัลบั้มแบบหมุน
+              _buildAlbumArt(),
+              const SizedBox(height: 20),
+              // ชื่อเพลง + ศิลปิน + ไอคอนหัวใจ
+              _buildSongInfo(),
+              const SizedBox(height: 10),
+              // แถบเลื่อนเวลาเพลง + เวลา
+              _buildProgressBar(),
+              const SizedBox(height: 10),
+              // ปุ่มควบคุมเพลง (Previous / Play-Pause / Next)
               _buildControlButtons(),
               const SizedBox(height: 20),
+              // ควบคุมเสียง
               _buildVolumeControl(),
               const Spacer(),
+              // ปุ่ม Lyrics (เมื่อกดจะเลื่อนขึ้นเป็น Bottom Sheet)
               _buildLyricsButton(),
               const SizedBox(height: 20),
             ],
@@ -199,32 +231,34 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen>
   }
 
   Widget _buildTopBar() {
-    return Container(
-      // padding ลดหรือปรับได้ตามชอบ
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8.0),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           // ปุ่มย้อนกลับ
           IconButton(
             onPressed: () => Navigator.pop(context),
             icon: const Icon(Icons.arrow_back, color: Colors.white),
           ),
-          // ตรงกลาง
           const Expanded(
             child: Center(
               child: Text(
                 'NOW PLAYING',
                 style: TextStyle(
                   color: Colors.white,
-                  fontSize: 20,
+                  fontSize: 18,
                   fontWeight: FontWeight.bold,
                 ),
               ),
             ),
           ),
-          // SizedBox สำหรับถ่วงด้านขวา
-          const SizedBox(width: 48),
+          // ปุ่มเมนู (จุดสามจุด)
+          IconButton(
+            onPressed: () {
+              // TODO: ใส่ฟังก์ชันที่ต้องการ
+            },
+            icon: const Icon(Icons.more_vert, color: Colors.white),
+          ),
         ],
       ),
     );
@@ -234,14 +268,15 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen>
     return RotationTransition(
       turns: _rotationController,
       child: Container(
-        width: 264,
-        height: 264,
+        width: 240,
+        height: 240,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          border: Border.all(color: Colors.green, width: 4),
+          border: Border.all(color: Colors.white70, width: 4),
         ),
         child: ClipOval(
           child: Image.network(
+            // เปลี่ยนเป็นรูปภาพที่ต้องการ
             'https://i.ytimg.com/vi/qguo-j5PxBE/hqdefault.jpg',
             fit: BoxFit.cover,
           ),
@@ -250,40 +285,86 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen>
     );
   }
 
-  Widget _buildProgressBar() {
-    return Column(
-      children: [
-        Slider(
-          activeColor: Colors.white,
-          inactiveColor: Colors.white54,
-          min: 0,
-          max: _totalDuration,
-          value: _currentPosition.clamp(0, _totalDuration),
-          onChanged: (value) {
-            _audioPlayer.seek(Duration(seconds: value.toInt()));
-          },
-        ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              _formatTime(_currentPosition),
-              style: const TextStyle(color: Colors.white),
+  Widget _buildSongInfo() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // ข้อมูลเพลง (ชื่อเพลง + ศิลปิน) ชิดซ้าย
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // ชื่อเพลง
+                Text(
+                  'ซ่อน(ไม่)หา',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                // ศิลปิน
+                const Text(
+                  'Jeff Satur',
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontSize: 16,
+                  ),
+                ),
+              ],
             ),
-            Text(
-              _formatTime(_totalDuration),
-              style: const TextStyle(color: Colors.white),
+          ),
+          // ไอคอนหัวใจ (กดถูกใจ) ชิดขวา
+          GestureDetector(
+            onTap: () {
+              setState(() {
+                isFavorite = !isFavorite;
+              });
+            },
+            child: Icon(
+              isFavorite ? Icons.favorite : Icons.favorite_border,
+              color: isFavorite ? Colors.greenAccent : Colors.white70,
             ),
-          ],
-        ),
-      ],
+          ),
+        ],
+      ),
     );
   }
 
-  String _formatTime(double seconds) {
-    final minutes = seconds ~/ 60;
-    final sec = (seconds % 60).toInt();
-    return '${minutes.toString().padLeft(2, '0')}:${sec.toString().padLeft(2, '0')}';
+  Widget _buildProgressBar() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      child: Column(
+        children: [
+          Slider(
+            activeColor: Colors.white,
+            inactiveColor: Colors.white54,
+            min: 0,
+            max: _totalDuration,
+            value: _currentPosition.clamp(0, _totalDuration),
+            onChanged: (value) {
+              _audioPlayer.seek(Duration(seconds: value.toInt()));
+            },
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                _formatTime(_currentPosition),
+                style: const TextStyle(color: Colors.white),
+              ),
+              Text(
+                _formatTime(_totalDuration),
+                style: const TextStyle(color: Colors.white),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildControlButtons() {
@@ -292,7 +373,9 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen>
       children: [
         IconButton(
           icon: const Icon(Icons.skip_previous, color: Colors.white),
-          onPressed: () {},
+          onPressed: () {
+            // TODO: ใส่ฟังก์ชันย้อนกลับเพลง
+          },
         ),
         InkWell(
           onTap: () async {
@@ -313,62 +396,72 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen>
             });
           },
           child: Icon(
-            isPlaying ? Icons.pause : Icons.play_arrow,
-            size: 50,
+            isPlaying ? Icons.pause_circle_filled : Icons.play_circle_fill,
+            size: 60,
             color: Colors.white,
           ),
         ),
         IconButton(
           icon: const Icon(Icons.skip_next, color: Colors.white),
-          onPressed: () {},
+          onPressed: () {
+            // TODO: ใส่ฟังก์ชันข้ามไปเพลงถัดไป
+          },
         ),
       ],
     );
   }
 
   Widget _buildVolumeControl() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        IconButton(
-          icon: Icon(
-            isMuted ? Icons.volume_off : Icons.volume_up,
-            color: Colors.white,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      child: Row(
+        children: [
+          IconButton(
+            icon: Icon(
+              isMuted ? Icons.volume_off : Icons.volume_up,
+              color: Colors.white,
+            ),
+            onPressed: () {
+              setState(() {
+                isMuted = !isMuted;
+                _volume = isMuted ? 0.0 : 1.0;
+                _audioPlayer.setVolume(_volume);
+                VolumeController().setVolume(_volume);
+              });
+            },
           ),
-          onPressed: () {
-            setState(() {
-              isMuted = !isMuted;
-              _volume = isMuted ? 0.0 : 1.0;
-              _audioPlayer.setVolume(_volume);
-              VolumeController().setVolume(_volume);
-            });
-          },
-        ),
-        Slider(
-          activeColor: Colors.white,
-          inactiveColor: Colors.white54,
-          min: 0,
-          max: 1,
-          value: _volume,
-          onChanged: (value) {
-            setState(() {
-              _volume = value;
-              isMuted = _volume == 0.0;
-              _audioPlayer.setVolume(value);
-              VolumeController().setVolume(value);
-            });
-          },
-        ),
-      ],
+          Expanded(
+            child: Slider(
+              activeColor: Colors.white,
+              inactiveColor: Colors.white54,
+              min: 0,
+              max: 1,
+              value: _volume,
+              onChanged: (value) {
+                setState(() {
+                  _volume = value;
+                  isMuted = _volume == 0.0;
+                  _audioPlayer.setVolume(value);
+                  VolumeController().setVolume(value);
+                });
+              },
+            ),
+          ),
+        ],
+      ),
     );
   }
 
   Widget _buildLyricsButton() {
-    return InkWell(
+    return GestureDetector(
       onTap: () => _showLyrics(context),
       child: const Text(
         'LYRICS',
-        style: TextStyle(color: Colors.white, fontSize: 16),
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: 16,
+          decoration: TextDecoration.underline,
+        ),
       ),
     );
   }
