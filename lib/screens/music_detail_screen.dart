@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '../routes.dart';
+import '../routes.dart'; // <-- ไฟล์ routes.dart ที่มีการกำหนด Route
+import '../screens/music_player_screen.dart'; // <-- เพิ่มบรรทัดนี้
 
 class MusicDetailScreen extends StatefulWidget {
   const MusicDetailScreen({Key? key}) : super(key: key);
@@ -64,7 +65,7 @@ class _MusicDetailScreenState extends State<MusicDetailScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final size = MediaQuery.of(context).size;
-    
+
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
@@ -192,10 +193,26 @@ class _MusicDetailScreenState extends State<MusicDetailScreen> {
                               const SizedBox(width: 8),
                               InkWell(
                                 onTap: () {
+                                  // แสดง SnackBar หรือไม่ก็ได้
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
                                       content: Text('Playing...'),
                                       duration: Duration(seconds: 1),
+                                    ),
+                                  );
+
+                                  // 1) หากคุณมี Route ชื่อ "musicPlayer" ใน routes.dart
+                                  // Navigator.pushNamed(context, Routes.musicPlayer);
+
+                                  // 2) หากคุณยังไม่ได้ใช้ named route แต่ต้องการไปหน้า MusicPlayerScreen โดยตรง
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          // ต้อง import ไฟล์ music_player_screen.dart มาด้วย
+                                          // เช่น: import 'package:your_app/screens/music_player_screen.dart';
+                                          // ด้านบน
+                                          const MusicPlayerScreen(),
                                     ),
                                   );
                                 },
