@@ -13,7 +13,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
-      body: HomeContent(), // ✅ ใช้ HomeContent โดยตรง
+      body: HomeContent(),
 
       // **🔽 Bottom Navigation Bar**
       bottomNavigationBar: BottomNavigationBar(
@@ -21,9 +21,9 @@ class _HomeScreenState extends State<HomeScreen> {
         selectedItemColor: Colors.greenAccent,
         unselectedItemColor: Colors.white70,
         currentIndex: _selectedIndex,
-        type: BottomNavigationBarType.fixed, // ✅ ป้องกันไอคอนถูกบีบ
+        type: BottomNavigationBarType.fixed,
         onTap: (index) {
-          if (_selectedIndex == index) return; // ป้องกันการกดซ้ำแล้วไม่มีอะไรเกิดขึ้น
+          if (_selectedIndex == index) return;
           setState(() {
             _selectedIndex = index;
           });
@@ -110,9 +110,9 @@ class HomeContent extends StatelessWidget {
               scrollDirection: Axis.horizontal,
               child: Row(
                 children: [
-                  _buildRecentCard("https://i.scdn.co/image/ab67616100005174c36dd9eb55fb0db4911f25dd", "Bruno Mars", "Grenade"),
-                  _buildRecentCard("https://i.scdn.co/image/ab67616d0000b2739d28fd01859073a3ae6ea209", "NewJeans", "Super Shy"),
-                  _buildRecentCard("https://i.scdn.co/image/ab67616d0000b273e2f039481babe23658fc719a", "Linkin Park", "New Divine"),
+                  _buildRecentCard(context, "https://i.scdn.co/image/ab67616100005174c36dd9eb55fb0db4911f25dd", "Bruno Mars", "Grenade"),
+                  _buildRecentCard(context, "https://i.scdn.co/image/ab67616d0000b2739d28fd01859073a3ae6ea209", "NewJeans", "Super Shy"),
+                  _buildRecentCard(context, "https://i.scdn.co/image/ab67616d0000b273e2f039481babe23658fc719a", "Linkin Park", "New Divine"),
                 ],
               ),
             ),
@@ -133,10 +133,10 @@ class HomeContent extends StatelessWidget {
               crossAxisSpacing: 10,
               mainAxisSpacing: 10,
               children: [
-                _buildPlaylistCard("https://i.scdn.co/image/ab67616d0000b2732e05fd2e7fa984c228bdd637", "ขี้หึง", "Silly Fools"),
-                _buildPlaylistCard("https://i.scdn.co/image/ab67616d0000b2739d28fd01859073a3ae6ea209", "Super Shy", "NewJeans"),
-                _buildPlaylistCard("https://i.scdn.co/image/ab67616100005174c36dd9eb55fb0db4911f25dd", "Grenade", "Bruno Mars"),
-                _buildPlaylistCard("https://i.scdn.co/image/ab67616d0000b273e2f039481babe23658fc719a", "New Divine", "Linkin Park"),
+                _buildPlaylistCard(context, "https://i.scdn.co/image/ab67616d0000b2732e05fd2e7fa984c228bdd637", "ขี้หึง", "Silly Fools"),
+                _buildPlaylistCard(context, "https://i.scdn.co/image/ab67616d0000b2739d28fd01859073a3ae6ea209", "Super Shy", "NewJeans"),
+                _buildPlaylistCard(context, "https://i.scdn.co/image/ab67616100005174c36dd9eb55fb0db4911f25dd", "Grenade", "Bruno Mars"),
+                _buildPlaylistCard(context, "https://i.scdn.co/image/ab67616d0000b273e2f039481babe23658fc719a", "New Divine", "Linkin Park"),
               ],
             ),
           ],
@@ -171,75 +171,89 @@ class HomeContent extends StatelessWidget {
   }
 
   // **สร้าง Widget สำหรับ Recent Play**
-  Widget _buildRecentCard(String imageUrl, String artist, String song) {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 8),
+  Widget _buildRecentCard(BuildContext context, String imageUrl, String artist, String song) {
+    return GestureDetector(
+      onTap: () {
+        // กดแล้วไปหน้า MusicPlayerScreen
+        Navigator.pushNamed(context, AppRoutes.musicPlayer);
+      },
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 8),
+        child: Container(
+          width: 150,
+          decoration: BoxDecoration(
+            color: Colors.grey[900],
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Column(
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: Image.network(imageUrl, height: 100, width: 150, fit: BoxFit.cover),
+              ),
+              Padding(
+                padding: EdgeInsets.all(8),
+                child: Text(artist, style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+              ),
+              Padding(
+                padding: EdgeInsets.only(left: 8, bottom: 8),
+                child: Text(song, style: TextStyle(color: Colors.white70)),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // **สร้าง Widget สำหรับ Playlist Card (Made for you)**
+  Widget _buildPlaylistCard(BuildContext context, String imageUrl, String title, String artist) {
+    return GestureDetector(
+      onTap: () {
+        // กดแล้วไปหน้า MusicPlayerScreen
+        Navigator.pushNamed(context, AppRoutes.musicPlayer);
+      },
       child: Container(
-        width: 150,
         decoration: BoxDecoration(
           color: Colors.grey[900],
           borderRadius: BorderRadius.circular(10),
         ),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(10),
-              child: Image.network(imageUrl, height: 100, width: 150, fit: BoxFit.cover),
+              child: Image.network(
+                imageUrl,
+                height: 100,
+                width: double.infinity,
+                fit: BoxFit.cover,
+                loadingBuilder: (context, child, loadingProgress) {
+                  if (loadingProgress == null) return child;
+                  return Center(child: CircularProgressIndicator());
+                },
+                errorBuilder: (context, error, stackTrace) {
+                  return Icon(Icons.error, color: Colors.red);
+                },
+              ),
             ),
             Padding(
               padding: EdgeInsets.all(8),
-              child: Text(artist, style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+              child: Text(
+                title,
+                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              ),
             ),
             Padding(
               padding: EdgeInsets.only(left: 8, bottom: 8),
-              child: Text(song, style: TextStyle(color: Colors.white70)),
+              child: Text(
+                artist,
+                style: TextStyle(color: Colors.white70),
+              ),
             ),
           ],
         ),
       ),
     );
   }
-}
-Widget _buildPlaylistCard(String imageUrl, String title, String artist) {
-  return Container(
-    decoration: BoxDecoration(
-      color: Colors.grey[900],
-      borderRadius: BorderRadius.circular(10),
-    ),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        ClipRRect(
-          borderRadius: BorderRadius.circular(10),
-          child: Image.network(
-            imageUrl,
-            height: 100,
-            width: double.infinity,
-            fit: BoxFit.cover,
-            loadingBuilder: (context, child, loadingProgress) {
-              if (loadingProgress == null) return child;
-              return Center(child: CircularProgressIndicator());
-            },
-            errorBuilder: (context, error, stackTrace) {
-              return Icon(Icons.error, color: Colors.red);
-            },
-          ),
-        ),
-        Padding(
-          padding: EdgeInsets.all(8),
-          child: Text(
-            title,
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-          ),
-        ),
-        Padding(
-          padding: EdgeInsets.only(left: 8, bottom: 8),
-          child: Text(
-            artist,
-            style: TextStyle(color: Colors.white70),
-          ),
-        ),
-      ],
-    ),
-  );
 }
