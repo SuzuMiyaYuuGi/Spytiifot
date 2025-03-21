@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'; // สำหรับ rootBundle.loadString
 import 'package:audioplayers/audioplayers.dart';
@@ -42,6 +43,10 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen>
 
   void _setupAudioPlayer() async {
     try {
+      // ตั้งค่า PlayerMode และ ReleaseMode เพื่อช่วยอ่าน Duration ให้ถูกต้อง
+      await _audioPlayer.setPlayerMode(PlayerMode.mediaPlayer);
+      await _audioPlayer.setReleaseMode(ReleaseMode.stop);
+
       // กำหนดแหล่งเสียงให้กับ AudioPlayer
       await _audioPlayer.setSource(AssetSource("audio/music.mp3"));
       // ตั้งค่าเสียงให้เป็น 100% หลังโหลดไฟล์เสียง
@@ -49,9 +54,16 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen>
       print("🎵 Audio loaded and volume set to 1.0");
     } catch (e) {
       print("🚨 Error loading audio: $e");
+      return;
     }
 
+    // สร้าง Completer เพื่อรอให้ onDurationChanged ส่งค่าที่ถูกต้อง (มากกว่า 1 วินาที)
+    Completer<void> durationCompleter = Completer<void>();
     _audioPlayer.onDurationChanged.listen((Duration d) {
+      // ถ้าค่า Duration ที่ได้มากกว่า 1 วินาที ให้ถือว่าได้ข้อมูลที่ถูกต้อง
+      if (d.inSeconds > 1 && !durationCompleter.isCompleted) {
+        durationCompleter.complete();
+      }
       setState(() {
         _totalDuration = d.inSeconds.toDouble();
       });
@@ -70,6 +82,26 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen>
         hasStarted = false; // รีเซ็ตสถานะเมื่อเล่นจบ
       });
     });
+
+    // รอให้ได้ Duration ที่ถูกต้อง โดยใช้ timeout ในกรณีที่ไม่มีการอัปเดต
+    try {
+      await durationCompleter.future.timeout(const Duration(seconds: 5));
+    } catch (e) {
+      print("🚨 Timeout waiting for duration: $e");
+    }
+
+    // หลังจากที่ได้ Duration ที่ถูกต้องแล้ว ให้เริ่มเล่นเพลง
+    try {
+      await _audioPlayer.play(AssetSource("audio/music.mp3"));
+      setState(() {
+        isPlaying = true;
+        hasStarted = true;
+      });
+      _rotationController.repeat();
+      print("🎵 Audio started playing");
+    } catch (e) {
+      print("🚨 Error playing audio: $e");
+    }
   }
 
   void _setupVolumeController() {
@@ -165,27 +197,28 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen>
   }
 
   Widget _buildTopBar() {
-    return SizedBox(
-      height: 50,
-      child: Stack(
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Align(
-            alignment: Alignment.centerLeft,
-            child: IconButton(
-              onPressed: () => Navigator.pop(context),
-              icon: const Icon(Icons.arrow_back, color: Colors.white),
-            ),
+          IconButton(
+            onPressed: () => Navigator.pop(context),
+            icon: const Icon(Icons.arrow_back, color: Colors.white),
           ),
-          const Center(
-            child: Text(
-              'NOW PLAYING',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
+          const Expanded(
+            child: Center(
+              child: Text(
+                'NOW PLAYING',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ),
+          const SizedBox(width: 48),
         ],
       ),
     );
@@ -227,8 +260,14 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen>
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(_formatTime(_currentPosition), style: const TextStyle(color: Colors.white)),
-            Text(_formatTime(_totalDuration), style: const TextStyle(color: Colors.white)),
+            Text(
+              _formatTime(_currentPosition),
+              style: const TextStyle(color: Colors.white),
+            ),
+            Text(
+              _formatTime(_totalDuration),
+              style: const TextStyle(color: Colors.white),
+            ),
           ],
         ),
       ],
@@ -236,7 +275,7 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen>
   }
 
   String _formatTime(double seconds) {
-    int minutes = (seconds ~/ 60);
+    int minutes = seconds ~/ 60;
     int sec = (seconds % 60).toInt();
     return '${minutes.toString().padLeft(2, '0')}:${sec.toString().padLeft(2, '0')}';
   }
@@ -255,7 +294,6 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen>
               await _audioPlayer.pause();
               _rotationController.stop();
             } else {
-              // ถ้าเพลงยังไม่เคยเล่น ให้เรียก play() เพื่อเริ่มเล่นเพลง
               if (!hasStarted) {
                 await _audioPlayer.play(AssetSource("audio/music.mp3"));
                 hasStarted = true;
@@ -286,7 +324,6 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen>
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        // ปุ่ม Mute/Unmute
         IconButton(
           icon: Icon(
             isMuted ? Icons.volume_off : Icons.volume_up,
@@ -295,14 +332,12 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen>
           onPressed: () {
             setState(() {
               isMuted = !isMuted;
-              // ถ้า mute ให้ตั้งค่าเสียงเป็น 0, ถ้า unmute ให้ตั้งเป็น 1.0 (100%)
               _volume = isMuted ? 0.0 : 1.0;
               _audioPlayer.setVolume(_volume);
               VolumeController().setVolume(_volume);
             });
           },
         ),
-        // Slider ปรับเสียงจากแอป
         Slider(
           activeColor: Colors.white,
           inactiveColor: Colors.white54,
@@ -322,9 +357,7 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen>
     );
   }
 
-  /// ปุ่มสำหรับแสดงเนื้อเพลง
   Widget _buildLyricsButton() {
-    // ใช้ GestureDetector, InkWell, หรือ InkResponse ก็ได้
     return InkWell(
       onTap: () => _showLyrics(context),
       child: const Text(
