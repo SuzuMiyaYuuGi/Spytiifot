@@ -161,6 +161,7 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // เอา AppBar ออก หรือถ้าอยากใช้ AppBar ของ Flutter ก็สามารถใช้ได้
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
@@ -174,9 +175,10 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen>
           ),
         ),
         child: SafeArea(
+          // SafeArea จะช่วยเลี่ยงส่วนบนของหน้าจอ (notch)
           child: Column(
             children: [
-              const SizedBox(height: 80),
+              // ลบ SizedBox(height: 80) ออก เพื่อให้ Top Bar ชิดบน
               _buildTopBar(),
               const SizedBox(height: 30),
               _buildAlbumArt(),
@@ -187,7 +189,7 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen>
               const SizedBox(height: 20),
               _buildVolumeControl(),
               const Spacer(),
-              _buildLyricsButton(), // ปุ่มกดดูเนื้อเพลง
+              _buildLyricsButton(),
               const SizedBox(height: 20),
             ],
           ),
@@ -198,14 +200,17 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen>
 
   Widget _buildTopBar() {
     return Container(
+      // padding ลดหรือปรับได้ตามชอบ
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
+          // ปุ่มย้อนกลับ
           IconButton(
             onPressed: () => Navigator.pop(context),
             icon: const Icon(Icons.arrow_back, color: Colors.white),
           ),
+          // ตรงกลาง
           const Expanded(
             child: Center(
               child: Text(
@@ -218,6 +223,7 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen>
               ),
             ),
           ),
+          // SizedBox สำหรับถ่วงด้านขวา
           const SizedBox(width: 48),
         ],
       ),
@@ -275,8 +281,8 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen>
   }
 
   String _formatTime(double seconds) {
-    int minutes = seconds ~/ 60;
-    int sec = (seconds % 60).toInt();
+    final minutes = seconds ~/ 60;
+    final sec = (seconds % 60).toInt();
     return '${minutes.toString().padLeft(2, '0')}:${sec.toString().padLeft(2, '0')}';
   }
 
