@@ -52,6 +52,7 @@ flutter:
   assets:
     - assets/audio/          # ที่เก็บ music.mp3
     - assets/lyrics/         # ที่เก็บไฟล์ lyrics
+    - assets/pic/         # ที่เก็บไฟล์ lyrics
 
 
   # The following line ensures that the Material Icons font is
